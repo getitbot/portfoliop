@@ -1,0 +1,550 @@
+/* --- 1. Global Setup & Variables --- */
+:root {
+    /* Define our color palette */
+    --color-primary: #3498db;
+    --color-primary-dark: #2980b9;
+    --color-secondary: #2c3e50;
+    --color-light: #ffffff;
+    --color-dark: #333333;
+    --color-gray: #f4f4f4;
+
+    /* RGB versions for use in rgba() inside gradients */
+    --color-primary-rgb: 52,152,219; /* rgb(52,152,219) matches #3498db */
+    --color-accent-rgb: 46,204,113;  /* rgb(46,204,113) used as accent */
+    --color-secondary-rgb: 44,62,80; /* rgb(44,62,80) matches #2c3e50 */
+
+    /* Define our fonts */
+    --font-primary: 'Montserrat', sans-serif;
+    --font-secondary: 'Roboto', sans-serif;
+}
+
+
+* {
+    /* This rule makes sizing boxes more intuitive */
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-secondary);
+    margin: 0;
+    color: var(--color-dark);
+    line-height: 1.6; /* Improves readability */
+    /* Keep layout above the animated background */
+    position: relative;
+    z-index: 1;
+    background-color: transparent; /* base color handled by html */
+    overflow-x: hidden; /* prevents horizontal scroll from animated elements */
+}
+
+/* Animated background using a blurred, layered gradient on a pseudo-element. */
+html {
+    background-color: var(--color-gray); /* fallback base color */
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0; /* top:0; right:0; bottom:0; left:0 */
+    z-index: 0;
+    pointer-events: none; /* let clicks pass through */
+    background-image:
+        radial-gradient(600px 400px at 10% 20%, rgba(var(--color-primary-rgb), 0.12), transparent 20%),
+        radial-gradient(500px 350px at 85% 75%, rgba(var(--color-accent-rgb), 0.10), transparent 18%),
+        linear-gradient(120deg, rgba(var(--color-primary-rgb), 0.04), rgba(var(--color-secondary-rgb), 0.02));
+    background-size: 200% 200%, 230% 230%, 150% 150%;
+    background-repeat: no-repeat;
+    filter: blur(30px) saturate(120%);
+    transform: translateZ(0); /* promote to its own layer for smoother animation */
+    animation: bgShift 18s linear infinite, subtleFloat 10s ease-in-out infinite alternate;
+    will-change: transform, background-position;
+}
+
+/* Add a second layer of subtle moving orbs using the after pseudo-element */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+        radial-gradient(120px 120px at 15% 80%, rgba(255,255,255,0.06), transparent 30%),
+        radial-gradient(180px 140px at 75% 20%, rgba(255,255,255,0.04), transparent 28%);
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: blur(24px) contrast(110%);
+    transform: translateZ(0);
+    animation: orbsMove 22s ease-in-out infinite;
+    opacity: 0.9;
+}
+
+@keyframes bgShift {
+    0% {
+        background-position: 0% 0%, 0% 0%, 0% 0%;
+    }
+    50% {
+        background-position: 40% 60%, 60% 30%, 20% 80%;
+    }
+    100% {
+        background-position: 0% 100%, 0% 0%, 40% 20%;
+    }
+}
+
+@keyframes subtleFloat {
+    0% { transform: translateY(0) scale(1); }
+    100% { transform: translateY(-8px) scale(1.02); }
+}
+
+@keyframes orbsMove {
+    0% { transform: translateY(0) translateX(0) scale(1); }
+    50% { transform: translateY(-18px) translateX(8px) scale(1.02); }
+    100% { transform: translateY(0) translateX(0) scale(1); }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+        animation: none !important;
+        filter: none !important;
+        opacity: 1 !important;
+    }
+}
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+img {
+    max-width: 100%; /* Makes images responsive */
+    height: auto;
+}
+
+h1, h2, h3, .site-title {
+    font-family: var(--font-primary);
+    font-weight: 700;
+    color: var(--color-secondary);
+}
+
+/* --- 2. Header & Navigation --- */
+.site-header {
+    background-color: var(--color-light);
+    padding: 15px 0;
+    border-bottom: 2px solid #eee;
+    position: sticky; /* Makes header stick to top */
+    top: 0;
+    z-index: 10; /* Ensures it's above other content */
+}
+
+.nav-wrapper {
+    /* Flexbox! This aligns items in a row */
+    display: flex;
+    justify-content: space-between; /* Puts title left, nav right */
+    align-items: center; /* Vertically centers them */
+}
+
+.site-title {
+    font-size: 1.8em;
+    text-decoration: none;
+    margin: 0;
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex; /* Aligns nav items in a row */
+}
+
+.nav-links li {
+    margin-left: 25px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: var(--color-dark);
+    font-weight: 500;
+    font-size: 1.1em;
+    padding: 5px 0;
+    transition: color 0.3s ease;
+}
+
+.nav-links a.active,
+.nav-links a:hover {
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary);
+}
+
+/* --- 3. Mobile Navigation (Hamburger) --- */
+.nav-toggle {
+    display: none; /* Hidden on desktop */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.hamburger {
+    display: block;
+    position: relative;
+    width: 25px;
+    height: 3px;
+    background: var(--color-dark);
+    transition: all 0.3s ease-in-out;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 3px;
+    background: var(--color-dark);
+    left: 0;
+    transition: all 0.3s ease-in-out;
+}
+
+.hamburger::before { top: -8px; }
+.hamburger::after { top: 8px; }
+
+/* Hamburger animation (when 'nav-open' class is added by JS) */
+.nav-open .hamburger { background: transparent; }
+.nav-open .hamburger::before { transform: rotate(45deg) translate(5px, 5px); }
+.nav-open .hamburger::after { transform: rotate(-45deg) translate(5px, -5px); }
+
+
+/* --- 4. Re-usable Buttons --- */
+.button {
+    display: inline-block;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 700;
+    font-family: var(--font-primary);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+.button-primary {
+    background-color: var(--color-primary);
+    color: var(--color-light);
+}
+.button-primary:hover {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px); /* Slight lift effect */
+}
+.button-secondary {
+    background-color: transparent;
+    color: var(--color-secondary);
+    border: 2px solid var(--color-secondary);
+}
+.button-secondary:hover {
+    background-color: var(--color-secondary);
+    color: var(--color-light);
+}
+.button-small {
+    padding: 8px 16px;
+    font-size: 0.9em;
+}
+
+/* --- 5. Page Content (Hero & Projects) --- */
+.hero-section {
+    background-color: var(--color-secondary);
+    color: var(--color-light);
+    text-align: center;
+    padding: 80px 20px;
+}
+.hero-section h1 {
+    font-size: 3.5em;
+    color: var(--color-light);
+    margin: 0 0 10px 0;
+}
+.hero-subtitle {
+    font-size: 1.3em;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+.hero-section .button {
+    margin: 0 10px;
+}
+
+.featured-projects {
+    padding: 60px 0;
+}
+.featured-projects h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 40px;
+}
+
+/* CSS Grid! This creates a responsive gallery */
+.project-grid {
+    display: grid;
+    /* This creates as many 350px columns as fit, 
+      and '1fr' means "fill the remaining space".
+      On small screens, it automatically becomes 1 column.
+    */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px; /* Space between cards */
+}
+
+.project-card {
+    background-color: var(--color-light);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden; /* Keeps image corners rounded */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.project-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover; /* Ensures image fills space without stretching */
+}
+.card-content {
+    padding: 25px;
+}
+.card-content h3 {
+    margin-top: 0;
+}
+
+/* --- 6. Footer --- */
+.site-footer {
+    background-color: var(--color-secondary);
+    color: var(--color-gray);
+    text-align: center;
+    padding: 30px 0;
+    margin-top: 40px;
+}
+
+/* --- 7. Responsive Design (Media Queries) --- */
+
+/* This style block applies ONLY if the screen is 768px wide or less (tablets/mobiles) */
+@media (max-width: 768px) {
+    .nav-toggle {
+        display: block; /* Show the hamburger button */
+    }
+
+    .nav-links {
+        /* Hide the nav links off-screen */
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100vh;
+        width: 60%;
+        background: var(--color-light);
+        flex-direction: column; /* Stack links vertically */
+        align-items: center;
+        justify-content: center;
+        transform: translateX(100%); /* Start hidden to the right */
+        transition: transform 0.3s ease-in-out;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    }
+    
+    /* This class is added by JS to show the menu */
+    .nav-links.nav-open {
+        transform: translateX(0); /* Slide in */
+    }
+
+    .nav-links li {
+        margin: 20px 0;
+    }
+    
+    .hero-section h1 {
+        font-size: 2.5em;
+    }
+}
+
+/* --- 8. Contact Page Styles --- */
+
+.contact-section {
+    padding: 60px 0;
+}
+.contact-section h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+.contact-subtitle {
+    text-align: center;
+    font-size: 1.1em;
+    color: #666;
+    margin-bottom: 40px;
+}
+
+.contact-form {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--color-light);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 8px;
+    font-family: var(--font-primary);
+}
+
+/* Style for text inputs and the textarea */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-family: var(--font-secondary);
+    font-size: 1em;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-primary); /* Highlight on focus */
+}
+
+/* Style for the error messages under each input */
+.error-message {
+    color: #e74c3c; /* A nice red */
+    font-size: 0.9em;
+    margin-top: 5px;
+    height: 1em; /* Reserve space to prevent layout shift */
+}
+
+/* Style for the main form status message */
+#form-status {
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    font-weight: 700;
+    padding: 15px;
+    border-radius: 5px;
+    display: none; /* Hidden by default */
+}
+/* We use JavaScript to add these classes */
+#form-status.status-success {
+    display: block;
+    background-color: #eafaf1;
+    color: #28a745;
+    border: 1px solid #a6e9bb;
+}
+#form-status.status-error {
+    display: block;
+    background-color: #fbeae9;
+    color: #e74c3c;
+    border: 1px solid #f6ccc8;
+}
+
+/* Make the submit button full width on this form */
+.contact-form .button {
+    width: 100%;
+}
+/* --- 9. Page Header (for About, Portfolio) --- */
+
+.page-header {
+    text-align: center;
+    padding: 20px 0 40px 0;
+}
+.page-header h2 {
+    font-size: 2.8em;
+    margin: 0 0 10px 0;
+}
+.page-header p {
+    font-size: 1.2em;
+    color: #666;
+    max-width: 600px; /* Keeps subtitle from getting too wide */
+    margin: 0 auto;
+}
+
+/* --- (You can add this to your section styles if you like) --- */
+.portfolio-section {
+    padding: 40px 0;
+}
+.portfolio-section h2 {
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+}
+/* --- 10. About Page Styles --- */
+
+.about-section {
+    padding: 40px 0;
+}
+
+.about-content {
+    display: flex; /* Creates the two-column layout */
+    align-items: center; /* Vertically centers the items */
+    gap: 50px; /* Adds space between the two columns */
+    background: var(--color-light);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.about-text {
+    /* The text column will take up 60% of the space */
+    flex: 2; /* This is a proportion (2 out of 3 total) */
+}
+
+.about-image {
+    /* The image column will take up 40% of the space */
+    flex: 1; /* This is a proportion (1 out of 3 total) */
+    text-align: center;
+}
+
+.about-image img {
+    max-width: 100%;
+    border-radius: 8px; /* Slightly rounded corners for the image */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* --- Responsive styles for the About page --- */
+
+/* On screens 768px or less, stack the columns */
+@media (max-width: 768px) {
+    .about-content {
+        flex-direction: column; /* Stack columns vertically */
+        padding: 30px 25px;
+        gap: 30px;
+    }
+
+    /* On mobile, make the image appear first */
+    .about-text {
+        order: 2; /* Tell flexbox to put this item second */
+    }
+    .about-image {
+        order: 1; /* Tell flexbox to put this item first */
+        width: 100%;
+    }
+}
+/* --- End of style.css --- */
+
+#get {
+background-color: #28a745;
+color: white;
+border: none;   
+padding: 10px 20px;
+font-size: 16px;
+border-radius: 5px;
+cursor: pointer;
+height: 7%;
+width: 30%;
+display: flex;
+justify-content: center;
+align-items: center;
+position: fixed;
+right: 20px;
+bottom: 20px;
+
+}
